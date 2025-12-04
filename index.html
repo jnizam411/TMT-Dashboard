@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMT Sector Micro-Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: transparent;
+            color: #e8e8e8;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #191919;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header */
+        .dashboard-header {
+            padding: 20px 24px 16px 24px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .dashboard-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-button {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            color: #9b9b9b;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .tab-button:hover {
+            background: #252525;
+            border-color: #3a3a3a;
+            color: #e8e8e8;
+        }
+
+        .tab-button.active {
+            background: #2a2a2a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Pulse View (Chart) */
+        .pulse-view {
+            padding: 16px 24px 24px 24px;
+        }
+
+        .ticker-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .ticker-button {
+            padding: 6px 12px;
+            background: #252525;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            color: #9b9b9b;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .ticker-button:hover {
+            background: #2a2a2a;
+            border-color: #3a3a3a;
+            color: #e8e8e8;
+        }
+
+        .ticker-button.active {
+            background: #0066ff;
+            border-color: #0066ff;
+            color: #ffffff;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sector Breakdown View (Heatmap) */
+        .sector-view {
+            padding: 16px 24px 24px 24px;
+        }
+
+        .heatmap-container {
+            width: 100%;
+            height: 600px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        /* TradingView Widget Containers */
+        #tradingview-chart,
+        #tradingview-heatmap {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9b9b9b;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 16px 16px 12px 16px;
+            }
+
+            .dashboard-title {
+                font-size: 16px;
+            }
+
+            .pulse-view,
+            .sector-view {
+                padding: 12px 16px 16px 16px;
+            }
+
+            .chart-container {
+                height: 400px;
+            }
+
+            .heatmap-container {
+                height: 500px;
+            }
+
+            .tab-button {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .ticker-button {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chart-container {
+                height: 350px;
+            }
+
+            .heatmap-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">TMT Sector Micro-Dashboard</div>
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="pulse">
+                    📈 Pulse
+                </button>
+                <button class="tab-button" data-tab="sector">
+                    🗺️ Sector Breakdown
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="pulse" class="tab-content active">
+            <div class="pulse-view">
+                <div class="ticker-selector">
+                    <button class="ticker-button active" data-ticker="NASDAQ:QQQ">QQQ</button>
+                    <button class="ticker-button" data-ticker="NASDAQ:XLK">XLK</button>
+                    <button class="ticker-button" data-ticker="NASDAQ:XLC">XLC</button>
+                    <button class="ticker-button" data-ticker="NASDAQ:SMH">SMH</button>
+                    <button class="ticker-button" data-ticker="NASDAQ:IGV">IGV</button>
+                </div>
+                <div class="chart-container">
+                    <div id="tradingview-chart">
+                        <div class="loading">Loading chart...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sector" class="tab-content">
+            <div class="sector-view">
+                <div class="heatmap-container">
+                    <div id="tradingview-heatmap">
+                        <div class="loading">Loading heatmap...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TradingView Widget Scripts -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+    <script type="text/javascript">
+        // Global state
+        let currentTicker = 'NASDAQ:QQQ';
+        let chartWidget = null;
+        let heatmapWidget = null;
+
+        // Tab Switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+
+                // Update active tab button
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update active tab content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(tabName).classList.add('active');
+
+                // Initialize widgets on first view
+                if (tabName === 'pulse' && !chartWidget) {
+                    initChartWidget(currentTicker);
+                } else if (tabName === 'sector' && !heatmapWidget) {
+                    initHeatmapWidget();
+                }
+            });
+        });
+
+        // Ticker Switching
+        document.querySelectorAll('.ticker-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const ticker = this.getAttribute('data-ticker');
+                currentTicker = ticker;
+
+                // Update active ticker button
+                document.querySelectorAll('.ticker-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update chart
+                if (chartWidget) {
+                    chartWidget.remove();
+                    chartWidget = null;
+                }
+                initChartWidget(ticker);
+            });
+        });
+
+        // Initialize TradingView Chart Widget
+        function initChartWidget(symbol) {
+            if (typeof TradingView === 'undefined') {
+                setTimeout(() => initChartWidget(symbol), 100);
+                return;
+            }
+
+            chartWidget = new TradingView.widget({
+                "width": "100%",
+                "height": "100%",
+                "symbol": symbol,
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#1a1a1a",
+                "enable_publishing": false,
+                "hide_top_toolbar": false,
+                "hide_legend": false,
+                "save_image": false,
+                "container_id": "tradingview-chart",
+                "backgroundColor": "#1a1a1a",
+                "gridColor": "#252525",
+                "allow_symbol_change": true,
+                "studies": [
+                    "MASimple@tv-basicstudies"
+                ],
+                "show_popup_button": false,
+                "popup_width": "1000",
+                "popup_height": "650",
+                "support_host": "https://www.tradingview.com"
+            });
+        }
+
+        // Initialize TradingView Heatmap Widget
+        function initHeatmapWidget() {
+            if (typeof TradingView === 'undefined') {
+                setTimeout(initHeatmapWidget, 100);
+                return;
+            }
+
+            heatmapWidget = new TradingView.StockHeatMapWidget({
+                "exchanges": [],
+                "dataSource": "SPX500",
+                "grouping": "sector",
+                "blockSize": "market_cap_basic",
+                "blockColor": "change",
+                "locale": "en",
+                "symbolUrl": "",
+                "colorTheme": "dark",
+                "hasTopBar": true,
+                "isDataSetEnabled": true,
+                "isZoomEnabled": true,
+                "hasSymbolTooltip": true,
+                "width": "100%",
+                "height": "100%",
+                "container_id": "tradingview-heatmap"
+            });
+        }
+
+        // Initialize chart on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Small delay to ensure container is rendered
+            setTimeout(() => {
+                initChartWidget(currentTicker);
+            }, 100);
+        });
+    </script>
+</body>
+</html>
