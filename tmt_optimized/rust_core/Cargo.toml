@@ -1,0 +1,43 @@
+[package]
+name = "tmt_rust_core"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance Rust core for TMT-Dashboard quantitative finance computations"
+authors = ["TMT-Dashboard"]
+
+[lib]
+name = "tmt_rust_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+# PyO3 for Python bindings
+pyo3 = { version = "0.20", features = ["extension-module"] }
+numpy = "0.20"
+
+# SIMD and parallel processing
+rayon = "1.8"
+packed_simd_2 = "0.3"
+
+# Numerical computing
+ndarray = { version = "0.15", features = ["rayon"] }
+ndarray-stats = "0.5"
+num-traits = "0.2"
+
+# Statistics
+statrs = "0.16"
+
+# Memory management
+memmap2 = "0.9"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+# Apple Silicon specific optimizations
+[profile.release.build-override]
+opt-level = 3
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+# ARM NEON optimizations are built into Rust for aarch64
