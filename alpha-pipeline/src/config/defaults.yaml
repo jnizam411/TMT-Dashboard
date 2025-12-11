@@ -1,0 +1,120 @@
+# Alpha Pipeline Default Configuration
+# =====================================
+# These are battle-tested parameters. Do not modify without thorough backtesting.
+
+# Global Settings
+device: "mps"  # Apple Silicon MPS acceleration
+random_seed: 42
+n_jobs: -1  # Use all available cores
+log_level: "INFO"
+
+# Data Configuration
+data:
+  start_date: "2000-01-01"
+  end_date: "2025-12-31"
+  universe_update_frequency: "quarterly"
+  min_price: 5.0
+  min_adv: 1000000
+  primary_source: "yfinance"
+  fallback_source: "alpha_vantage"
+  macro_tickers:
+    - "^GSPC"   # S&P 500
+    - "^IXIC"   # NASDAQ Composite
+    - "^RUT"    # Russell 2000
+    - "^VIX"    # CBOE Volatility Index
+    - "^TNX"    # 10-Year Treasury Yield
+    - "^MOVE"   # ICE BofA MOVE Index
+    - "DX-Y.NYB" # US Dollar Index
+    - "GLD"     # Gold ETF
+    - "USO"     # Oil ETF
+    - "TLT"     # 20+ Year Treasury ETF
+
+# Triple Barrier Labeling Configuration
+labeling:
+  horizontal_barrier_days: 10
+  vertical_barrier_multiplier: 1.5
+  vol_lookback: 20
+  min_return_threshold: 0.005  # 50 bps
+  stage1_threshold: 0.65
+
+# Feature Engineering Configuration
+features:
+  frac_diff_d_values:
+    - 0.2
+    - 0.3
+    - 0.4
+    - 0.5
+  frac_diff_threshold: 0.00001
+  return_windows:
+    - 5
+    - 10
+    - 21
+    - 63
+    - 126
+    - 252
+  vol_windows:
+    - 63
+    - 252
+  winsorize_lower: 0.05
+  winsorize_upper: 0.95
+  clip_sigma: 3.0
+  vpin_buckets: 20
+
+# Purged Walk-Forward Validation Configuration
+validation:
+  train_start: "2005-01-01"
+  train_end: "2015-12-31"
+  purge_days: 63
+  val_days: 252
+  test_days: 252
+  roll_days: 252
+
+# Model Hyperparameters
+model:
+  # Temporal Fusion Transformer
+  tft_sequence_length: 126
+  tft_hidden_size: 128
+  tft_quantiles:
+    - 0.1
+    - 0.5
+    - 0.9
+  tft_learning_rate: 0.001
+  tft_batch_size: 64
+  tft_max_epochs: 100
+
+  # N-BEATS
+  nbeats_lookback: 126
+  nbeats_horizon: 10
+  nbeats_stacks: 8
+  nbeats_hidden: 512
+
+  # LightGBM
+  lgb_n_estimators: 5000
+  lgb_learning_rate: 0.01
+  lgb_max_depth: -1
+  lgb_num_leaves: 256
+  lgb_feature_fraction: 0.8
+  lgb_bagging_fraction: 0.8
+  lgb_lambda_l1: 1.0
+  lgb_early_stopping_rounds: 50
+
+  # Lasso
+  lasso_n_features: 40
+  lasso_alpha: 0.01
+
+# Backtest Configuration
+backtest:
+  fixed_cost_bps: 7.5
+  impact_bps_per_mm: 0.1  # 0.1 bps per $1M notional
+  max_position_adv_pct: 0.05  # 5% of ADV
+  max_sector_weight: 0.25
+  long_short_decile: 1  # Top/bottom decile
+  rebalance_frequency: "daily"
+  sector_neutral: true
+
+# Live Inference Configuration
+inference:
+  run_time: "16:30"  # 4:30 PM ET
+  output_dir: "signals"
+  min_ic_alert_threshold: 0.03
+  consecutive_days_alert: 3
